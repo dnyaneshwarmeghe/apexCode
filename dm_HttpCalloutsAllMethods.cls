@@ -1,11 +1,16 @@
 public with sharing class dm_HttpCalloutsAllMethods {
     //for single response
+    @TestVisible
+    private static Boolean throwException = false;
    public static JSONWrapper getCalloutResponseContents()
    {
     try {
+        if(throwException)
+        {
+            throw new System.DmlException('custom exception');
+        }
         HttpRequest request = new HttpRequest();
-        request.setEndpoint('https://jsonplaceholder.typicode.com/posts'+'/1');
-        //https://jsonplaceholder.typicode.com/posts
+        request.setEndpoint('https://jsonplaceholder.typicode.com/posts'+'/1');        
         request.setMethod('GET');
         HttpResponse response = new Http().send(request);
         if(response.getStatusCode() ==200)
@@ -78,6 +83,10 @@ public with sharing class dm_HttpCalloutsAllMethods {
    public static  List<JSONWrapper.Circular> getNseApiCallouts()
    {
     try {
+        if(throwException)
+        {
+            throw new System.DmlException('custom exception');
+        }
         HttpRequest request = new HttpRequest();
         request.setEndpoint('https://www.nseindia.com/api/circulars');
         request.setMethod('GET');
@@ -89,21 +98,7 @@ public with sharing class dm_HttpCalloutsAllMethods {
         List<Object> responseList = (List<Object>) jsonResponseMap.get('data');
         System.debug('89:: responseList::'+ responseList);
         System.debug('90::responseList size::'+ responseList.size());
-        //wrapper class obj
-        /* "data": [
-            {   "fileDept": "MFSS",
-                "circNumber": "57453",
-                "fileExt": "zip",
-                "sub": "MFSS - Settlement Calendar for AUG 2023",
-                "cirDate": "20230705",
-                "cirDisplayDate": "July 05, 2023",
-                "circFilename": "MFSS57453.zip",
-                "circFilelink": "https://archives.nseindia.com/content/circulars/MFSS57453.zip",
-                "circCompany": "NCL",
-                "circDisplayNo": "NCL/MFSS/57453",
-                "circCategory": "Trading",
-                "circDepartment": "Mutual Fund"
-            }, */            
+        //wrapper class obj               
         List<JSONWrapper.Circular> circulars = new List<JSONWrapper.Circular>(); // bcs it has array of response.       
         for(Object obj: responseList)
         {
