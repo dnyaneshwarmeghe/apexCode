@@ -1,0 +1,104 @@
+//https://sjcom8-dev-ed--c.develop.vf.force.com/apex/createQuotes?Id=a025j00000hJIRx
+
+<apex:page controller="CreateQuotes">
+<apex:form >
+<apex:pageblock title="Edit Quote"> 
+<apex:pageBlockButtons >
+ <apex:commandButton value="Save " action="{!saveMethod}"/> <!-- need to add the insert save method ref -->
+ <apex:commandButton value="Cancel" /> <!-- need to add the cancel method ref -->
+</apex:pageBlockButtons>
+
+<apex:pageBlockSection title="Quote">   
+  <apex:outputField value="{!opportunityObj.AccountId__r.Name}"/>  
+  <apex:outputField value="{!opportunityObj.ContactId__r.LastName}"/>
+  <apex:outputField value="{!opportunityObj.Close_Date__c}"/>
+  <apex:outputField value="{!opportunityObj.Description__c}"/>
+  <apex:outputField value="{!opportunityObj.Amount__c}"/>
+    <apex:outputField value="{!opportunityObj.Close_Date__c}"/>
+      <apex:outputField value="{!opportunityObj.Expected_Revenue__c}"/>
+        <apex:outputField value="{!opportunityObj.Probability__c}"/>
+          <apex:outputField value="{!opportunityObj.StageName__c}"/>
+            <apex:outputField value="{!opportunityObj.Type__c}"/>
+</apex:pageBlockSection>
+
+<apex:pageblockTable value="{!opportunityObj.DM_Opportunity_Line_Items__r}" var="lineItem">
+<apex:column headerValue="Opportunity Name "> <apex:outputField value="{!lineItem.Opportunity__r.Name__c}"/></apex:column>
+<apex:column headerValue="Account Name "> <apex:outputField value="{!lineItem.AccountId__r.Name}"/></apex:column>
+<apex:column headerValue="Quantity__c"><apex:outputField value="{!lineItem.Quantity__c}"/>  </apex:column>
+<apex:column headerValue="Product "><apex:outputField value="{!lineItem.Custom_Product__r.Name__c }"/>  </apex:column>
+<apex:column headerValue="Service Date "><apex:outputField value="{!lineItem.ServiceDate__c}"/>  </apex:column>
+<apex:column headerValue="Discount "><apex:outputField value="{!lineItem.Discount__c}"/>  </apex:column>
+<apex:column headerValue="List Price "><apex:outputField value="{!lineItem.ListPrice__c}"/>  </apex:column>
+</apex:pageblockTable>
+</apex:pageblock>
+</apex:form>
+</apex:page>
+
+
+public class CreateQuotes {
+public DM_Opportunity__c opportunityObj {get;set;}
+public DM_Quote__c quoteObj {get;set;}
+public DM_Quote__c result {get;set;}
+public String accountRecordId;
+public List<DM_Quote_Line_Item__c> quoteLineItemList {get;set;}
+
+public CreateQuotes ()
+{
+accountRecordId = ApexPages.currentPage().getParameters().get('Id');
+System.debug('10 :: '+accountRecordId );
+
+opportunityObj = [SELECT AccountId__c,AccountId__r.Name,Amount__c,Close_Date__c,ContactId__c,ContactId__r.Name,ContactId__r.lastName,Description__c,Expected_Revenue__c,Id,Name,OwnerId__c,Probability__c,StageName__c,Type__c, (SELECT Id,Opportunity__c,Opportunity__r.Name__c, AccountId__c,AccountId__r.Name,Custom_Product__c,Custom_Product__r.Name__c,Description__c,Discount__c,ListPrice__c,Name,Name__c,Product_Code__c,Quantity__c,ServiceDate__c,Subtotal__c,Total_Price__c,Unit_Price__c FROM DM_Opportunity_Line_Items__r) FROM DM_Opportunity__c WHERE Id=: accountRecordId  ];
+System.debug('14::opportunityObj ::'+ opportunityObj );
+System.debug('15::Account name::'+ opportunityObj.AccountId__r.Name);
+System.debug('15::Discount ::'+ opportunityObj.DM_Opportunity_Line_Items__r);
+
+}
+
+
+
+public void saveMethod()
+{
+try{
+
+System.debug('23:: opportunityObj:: '+ opportunityObj);
+System.debug('24:: AccountId__c:: '+ opportunityObj.AccountId__c);
+System.debug('24:: opportunityObj.AccountId__r.Name:: '+ opportunityObj.AccountId__r.Name);
+quoteObj = new DM_Quote__c();
+quoteObj.AccountId__c=  opportunityObj.AccountId__c;
+quoteObj.ContactId__c =  opportunityObj.ContactId__c;
+quoteObj.ExpiratioDate__c =  opportunityObj.Close_Date__c;
+quoteObj.Description__c =  opportunityObj.Description__c;
+System.debug('30::quoteObj::'+ quoteObj);
+quoteLineItemList = new List<DM_Quote_Line_Item__c>();
+insert quoteObj ;
+
+result = [SELECT AccountId__c,AccountId__r.Name,ContactId__c,ContactId__r.Name,ContactId__r.lastName,Description__c,Discount__c,Email__c,ExpiratioDate__c,Id,Name,Name__c,Opportunity__c,Phone__c FROM DM_Quote__c WHERE Id=: quoteObj.id ];
+System.debug('34::result ::'+ result);
+
+for(DM_Opportunity_Line_Item__c obj1 : opportunityObj.DM_Opportunity_Line_Items__r)
+{
+DM_Quote_Line_Item__c quoteLineItem = new DM_Quote_Line_Item__c();
+quoteLineItem.Custom_Product__c= obj1.Custom_Product__c;
+quoteLineItem.Discount__c= obj1.Discount__c;
+quoteLineItem.ServiceDate__c= obj1.ServiceDate__c ;
+quoteLineItem.Description__c= obj1.Description__c;
+quoteLineItem.QuoteId__c= quoteObj.Id;
+quoteLineItem.AccountId__c = obj1.AccountId__c;
+
+    System.debug('16: '+ obj1);
+    System.debug('49: '+ quoteLineItem.AccountId__r.Name);
+    quoteLineItemList.add(quoteLineItem);
+    System.debug('49: '+ quoteLineItem);
+}
+    System.debug('51: '+ quoteLineItemList);
+    insert quoteLineItemList;
+ }
+ catch(Exception ex){
+ 
+ System.debug('35::error:: '+ ex + '  '+ ex.getLinenumber());
+ 
+}
+}
+
+
+}
