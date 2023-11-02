@@ -1,0 +1,82 @@
+<apex:page controller="Add_RemoveController">
+<apex:outputText value="{!errorMsg }" style="color:purple; font-size:15px;  border-style: double;"> </apex:outputText>
+ <apex:form >
+ <apex:pageBlock >
+ <apex:inputText value="{!stringInput }" />
+ <apex:commandButton value="Save" Style="background:red;color:white"  action="{!saveMethod}" />
+ <apex:commandButton value="Remove" Style="background:blue;color:white"  action="{!removeMethod}"/>  
+ 
+ <!-- 
+  <apex:pageBlockSection columns="1">
+                <apex:repeat value="{!stringList}" var="item">
+                    <apex:outputText value="{!item}" />
+                    <apex:commandButton value="Remove" Style="background:blue;color:white"  action="{!removeMethod}"/> 
+                </apex:repeat>
+  </apex:pageBlockSection>  
+  -->
+  <apex:pageBlockTable value="{!stringList}" var="str">  
+  <apex:column value="{!str}"/>
+  </apex:pageBlockTable>  
+  
+ </apex:pageBlock> 
+ </apex:form>
+</apex:page>
+
+
+
+public class Add_RemoveController {
+public  List<String> stringList{get;set;}
+public String stringInput {get;set;} 
+public String errorMsg {get;set;}
+
+ public Add_RemoveController() {
+   stringList= new List<String>();
+   } 
+public void saveMethod()
+{
+try{
+//stringList= new List<String>();
+//to check duplicates
+if(stringList.contains(stringInput))
+{
+ Integer indexVal = stringList.indexOf(stringInput);
+System.debug('Duplicate index no. '+ indexVal); 
+errorMsg  ='Duplicate Records exist on Index Number  '+ indexVal;
+ApexPages.addmessage(new ApexPages.message(ApexPages.severity.Error, 'First Error Message added from apex'+ errorMsg));
+System.debug('19:: duplicates found:: ');
+}
+else{
+stringList.add(stringInput);
+System.debug('11:: '+ stringList);
+stringInput = '';
+errorMsg = '';
+}
+
+System.debug('25:: '+ stringList);
+}
+catch(Exception ex) 
+{
+System.debug('27::error:: '+ ex);
+} 
+}
+
+public void removeMethod()
+{
+try{
+System.debug('26:: '+ stringList);
+if(stringList.Size()>0)
+{
+stringList.remove(stringList.size()-1);
+System.debug('30:: '+ stringList);
+}else{
+System.debug('32:: else block:: '+ stringList.size());
+}
+// return null;
+}
+catch(Exception ex) 
+{
+System.debug('38::error:: '+ ex);
+// return null;
+} 
+}
+}
